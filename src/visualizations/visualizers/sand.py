@@ -1,8 +1,9 @@
 '''
 Cellular Automata: Sand Simulation
 '''
-import pygame, random
-from utils import HSVToRGB
+import pygame
+from random import choice
+from visualizations.utils import HSV_to_RGB
 
 class Sand:
     COLOR: tuple[int] = (0, 0, 0)
@@ -18,7 +19,7 @@ class Sand:
         App.instance.update()
 
     def resetGrid(self):
-        self.grid: list[list[int]] = [[0 for i in range(App.COLS)] for j in range(App.ROWS)]
+        self.grid: list[list[int]] = [[0 for _ in range(App.COLS)] for _ in range(App.ROWS)]
     
     def swap(self, r1, c1, r2, c2):
         self.grid[r1][c1], self.grid[r2][c2] = self.grid[r2][c2], self.grid[r1][c1]
@@ -27,13 +28,13 @@ class Sand:
         App.instance.update()
 
     def getColor(self) -> list[int]:
-        return HSVToRGB(self.h, 1, 1)
+        return HSV_to_RGB(self.h, 1, 1)
     
     def next(self):
         for i in range(App.ROWS-2, -1, -1):
             for j in range(App.COLS):
                 if not self.grid[i][j]: continue
-                dir = random.choice([1, -1])
+                dir = choice([1, -1])
                 if not self.grid[i+1][j]:
                     self.swap(i, j, i+1, j)
                 elif j+dir >= 0 and j+dir < App.COLS and not self.grid[i][j+dir] and not self.grid[i+1][j+dir]:

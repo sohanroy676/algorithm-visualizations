@@ -1,7 +1,8 @@
 '''
 Visualizing the Sorting algorithms [BubbleSort, SelectionSort]
 '''
-import pygame, random
+import pygame
+from random import randint
 
 class Sort:
     types = ["Bubble", "Selection"]
@@ -15,7 +16,7 @@ class Sort:
         self.getRandomList()
     
     def getRandomList(self):
-        self.lst: list[int] = [random.randint(10, App.HEIGHT-10) for i in range(App.LEN)]
+        self.lst: list[int] = [randint(10, App.HEIGHT-10) for i in range(App.LEN)]
 
     def changeType(self):
         return eval(f"{Sort.types[(self._typeIdx+1)%len(Sort.types)]}Sort()")

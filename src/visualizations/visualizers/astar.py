@@ -2,7 +2,10 @@
 A* Path Finding Algorithm for 2D Grid without diagonal movement
 '''
 import pygame
-from utils import drawGridLines
+from enum import IntEnum
+from visualizations.utils import drawGridLines
+
+from typing import Callable
 
 class Node:
     def __init__(self, row: int, col: int, parent, goal: list[int]) -> None:
@@ -33,9 +36,17 @@ class Node:
     def __repr__(self) -> str:
         return f"({self.row}, {self.col}) : ({self.g}, {self.h}, {self.f})"
 
+class CellState(IntEnum):
+    WALL = 0
+    EMPTY = 1
+    START = 2
+    GOAL = 3
+
 class Astar:
-    states: dict[str: int] = {"wall": 0, "empty": 1, "start": 2, "goal": 3}
-    def __init__(self) -> None:
+    states = []
+    def __init__(self, reset_surf: Callable[[], None], on_update: Callable[[], None]) -> None:
+        self.reset_surf: Callable[[], None] = reset_surf
+        self.on_update: Callable[[], None] = on_update
         self.reset()
 
     def reset(self) -> None:
@@ -45,24 +56,24 @@ class Astar:
         self.closed: list = []
         self.path: list = []
         self.resetGrid()
-        App.instance.resetSurf()
+        AstarApp.instance.resetSurf()
 
     def resetGrid(self) -> None:
-        self.grid: list[list[int]] = [[1 for j in range(App.COLS)] for i in range(App.ROWS)]
+        self.grid: list[list[int]] = [[1 for j in range(AstarApp.COLS)] for i in range(AstarApp.ROWS)]
         self.endPoints: list[list[int]] = [[-1, -1], [-1, -1]]
     
     def place(self, pos: tuple[int], state: int) -> None:
-        if pos[0] < 0 or pos[0] >= App.ROWS or pos[1] < 0 or pos[1] >= App.COLS: return
+        if pos[0] < 0 or pos[0] >= AstarApp.ROWS or pos[1] < 0 or pos[1] >= AstarApp.COLS: return
         self.grid[pos[0]][pos[1]] = state
-        if state in [self.states["start"], self.states["goal"]]: self.endPoints[state-2] = pos[:]
-        App.instance.updateGrid(*pos, App.COLORSLIST[state])
+        if state in (CellState.START, CellState.GOAL): self.endPoints[state-2] = pos[:]
+        AstarApp.instance.updateGrid(*pos, AstarApp.COLORSLIST[state])
     
     def getNeighbors(self) -> list[list[int]]:
         n: list[list[int]] = []
         r: int = self.current.row
         c: int = self.current.col
         for i in [[r-1, c], [r+1, c], [r, c-1], [r, c+1]]:
-            if 0 <= i[0] < App.ROWS and 0 <= i[1] < App.COLS and self.grid[i[0]][i[1]]:
+            if 0 <= i[0] < AstarApp.ROWS and 0 <= i[1] < AstarApp.COLS and self.grid[i[0]][i[1]]:
                 n.append(i)
         return n[:]
 
@@ -74,7 +85,7 @@ class Astar:
         self.current: Node = self.getFromOpen()
         self.closed.append(self.current)
         if (not self.current.isSame(self.endPoints[0])) and (not self.current.isSame(self.endPoints[1])):
-            App.instance.updateGrid(self.current.row, self.current.col, App.COLORS["closed"])
+            AstarApp.instance.updateGrid(self.current.row, self.current.col, AstarApp.COLORS["closed"])
 
         if self.current.isSame(self.endPoints[1]):
             self.getPath()
@@ -87,7 +98,7 @@ class Astar:
             openIdx = self.inLst(self.open, n)
             if openIdx < 0:
                 self.open.append(Node(n[0], n[1], self.current, self.endPoints[1]))
-                App.instance.updateGrid(*n, App.COLORS["open"])
+                AstarApp.instance.updateGrid(*n, AstarApp.COLORS["open"])
             self.open[openIdx].update(self.current)
 
     def getPath(self) -> None:
@@ -96,9 +107,9 @@ class Astar:
         while parent is not None:
             self.path.append(parent)
             parent = parent.parent
-        for i in App.instance.astar.path:
-            App.instance.updateGrid(i.row, i.col, App.COLORS["goal"])
-        drawGridLines(App.instance.surf, App.ROWS, App.COLS, App.SIDE, App.COLORS["wall"], True)
+        for i in self.path:
+            AstarApp.instance.updateGrid(i.row, i.col, AstarApp.COLORS["goal"])
+        drawGridLines(AstarApp.instance.surf, AstarApp.ROWS, AstarApp.COLS, AstarApp.SIDE, AstarApp.COLORS["wall"], True)
 
     def inLst(self, lst, node) -> int:
         for i, n in enumerate(lst):
@@ -111,7 +122,8 @@ class Astar:
             if i == idx or n.f < self.open[idx].f: idx = i
         return self.open.pop(idx)
 
-class App:
+class AstarApp:
+    NAME: str = "A* Pathfinder"
     SIDE: int = 10
     WIDTH: int = 1000
     HEIGHT: int = 700
@@ -133,40 +145,40 @@ class App:
         print("SCROLL_WHEEL_UP to place the Start Point")
         print("SCROLL_WHEEL_DOWN to place the End Point")
         
-        App.instance = self
+        AstarApp.instance = self
 
         self.WIN: pygame.Surface = WIN
         self.WINRect: pygame.Rect = WIN.get_rect()
 
-        App.blitPos: tuple[int] = ((self.WINRect.width - App.WIDTH)//2, (self.WINRect.height - App.HEIGHT)//2)
+        AstarApp.blitPos: tuple[int] = ((self.WINRect.width - AstarApp.WIDTH)//2, (self.WINRect.height - AstarApp.HEIGHT)//2)
 
         self.surf: pygame.Surface = pygame.Surface((self.WIDTH, self.HEIGHT))
         self.surfRect: pygame.Rect = self.surf.get_rect()
-        pygame.display.set_caption("A* Pathfinder")
+        pygame.display.set_caption(self.NAME)
 
         self.astar: Astar = Astar()
         self.mouseState: dict = {"down": False, "state": 0}
         self.clock = pygame.time.Clock()
 
     def update(self) -> None:
-        pygame.display.update(self.WIN.blit(self.surf, App.blitPos))
+        pygame.display.update(self.WIN.blit(self.surf, AstarApp.blitPos))
     
     def updateGrid(self, row, col, clr) -> None:
-        pygame.draw.rect(self.surf, clr, (col*App.SIDE, row*App.SIDE, App.SIDE, App.SIDE))
+        pygame.draw.rect(self.surf, clr, (col*AstarApp.SIDE, row*AstarApp.SIDE, AstarApp.SIDE, AstarApp.SIDE))
         self.update()
     
     def resetSurf(self) -> None:
-        self.surf.fill(App.COLORS["empty"])
-        drawGridLines(self.surf, App.ROWS, App.COLS, App.SIDE, App.COLORS["wall"])
+        self.surf.fill(AstarApp.COLORS["empty"])
+        drawGridLines(self.surf, AstarApp.ROWS, AstarApp.COLS, AstarApp.SIDE, AstarApp.COLORS["wall"])
         self.update()
     
     def getPosFromMouse() -> tuple[int]:
         pos = pygame.mouse.get_pos()
-        return ((pos[1] - App.blitPos[1])//App.SIDE, (pos[0] - App.blitPos[0])//App.SIDE)
+        return ((pos[1] - AstarApp.blitPos[1])//AstarApp.SIDE, (pos[0] - AstarApp.blitPos[0])//AstarApp.SIDE)
 
     def mainloop(self) -> bool:
         while True:
-            self.clock.tick(App.FPS)
+            self.clock.tick(AstarApp.FPS)
             for event in pygame.event.get():
                 match event.type:
                     case pygame.QUIT:
@@ -190,21 +202,21 @@ class App:
                             case 4 | 5:
                                 # 4 = SCROLL_WHEEL_UP, 5 = SCROLL_WHEEL_DOWN
                                 if not self.astar.solveStarted:
-                                    self.astar.place(App.getPosFromMouse(), Astar.states[["start", "goal"][event.button-4]])
+                                    self.astar.place(AstarApp.getPosFromMouse(), CellState.START if event.button == 4 else CellState.GOAL)
                     
                     case pygame.MOUSEBUTTONUP:
                         self.mouseState["down"] = False
-                        if self.astar.solveStarted: App.FPS += 20
+                        if self.astar.solveStarted: AstarApp.FPS += 20
 
             if self.astar.solveStarted: self.astar.solveNext()
-            elif self.mouseState["down"]: self.astar.place(App.getPosFromMouse(), self.mouseState["state"])
+            elif self.mouseState["down"]: self.astar.place(AstarApp.getPosFromMouse(), self.mouseState["state"])
         
     
     def quit(self):
         pygame.display.set_caption("Visualisations")
 
 if __name__ == "__main__":
-    WIN: pygame.Surface = pygame.display.set_mode((App.WIDTH, App.HEIGHT))
-    app: App = App(WIN)
+    WIN: pygame.Surface = pygame.display.set_mode((AstarApp.WIDTH, AstarApp.HEIGHT))
+    app: AstarApp = AstarApp(WIN)
     app.mainloop()
     pygame.quit()

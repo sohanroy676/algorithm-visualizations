@@ -7,7 +7,7 @@ def drawGridLines(surf: pygame.Surface, ROWS: int, COLS: int, SIDE: int, COLOR: 
         pygame.draw.line(surf, COLOR, (i*SIDE, 0), (i*SIDE, ROWS*SIDE))
     if update: pygame.display.update()
 
-def HSVToRGB(h: float, s: float, v: float) -> tuple[int | float]:
+def HSV_to_RGB(h: float, s: float, v: float) -> tuple[int | float]:
     c = v*s
     x = c * (1 - abs((h/60) % 2 - 1))
     m = abs(v - c)
@@ -41,7 +41,7 @@ def blitRotateCenter(surf, image, topleft, angle: float):
     new_rect = rotated_image.get_rect(center = image.get_rect(topleft = topleft).center)
     return surf.blit(rotated_image, new_rect)
 
-class Vec2:
+class Vector2:
     def __init__(self, x: int | float, y: int | float):
         self.x: int | float = x
         self.y: int | float = y
@@ -50,14 +50,14 @@ class Vec2:
         return [self.x, self.y]
     
     def __add__(self, other):
-        if isinstance(other, Vec2):
-            return Vec2(self.x + other.x, self.y + other.y)
+        if isinstance(other, Vector2):
+            return Vector2(self.x + other.x, self.y + other.y)
         else:
             return NotImplemented
     
     def __mul__(self, other):
         if isinstance(other, int | float):
-            return Vec2(self.x * other, self.y * other)
+            return Vector2(self.x * other, self.y * other)
         else:
             return NotImplemented
     

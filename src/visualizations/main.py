@@ -2,14 +2,14 @@
 The main menu to select the visualisation
 '''
 import pygame
-from utils import Label, Button
+from .utils import Label, Button
+from .visualizers import APPS, Visualizer
 pygame.init()
 
 class MainApp:
     WIDTH: int = 1280
     HEIGHT: int = 720
     COLORS: dict = {"bg": pygame.Color("purple")}
-    APPS: list[str] = ["Astar", "Hilbert", "Life", "MarchSq", "Sand", "NQueens", "Sort", "WolframCA", "WaveFunc"]
 
     def __init__(self, fullscreen: bool = False) -> None:
         '''Initializing the main app'''
@@ -20,7 +20,7 @@ class MainApp:
         pygame.display.set_caption("Visualisations")
         
         self.run: bool = True
-        self.app = None
+        self.app: Visualizer | None = None
 
         self.loadUIElements()
 
@@ -49,8 +49,8 @@ class MainApp:
         cols: int = 4
         self.buttons: list[Button] = [
                 Button(name, (2*(i%cols + 1)*MainApp.WIDTH//10, 2*(2 + i//cols)*MainApp.HEIGHT//10), 
-                                self.setApp, funcArgs = (name.lower(),))
-                for i, name in enumerate(MainApp.APPS)
+                                self.setApp, funcArgs = (cls,))
+                for i, (name, cls) in enumerate(APPS.items())
             ]
         self.buttons.append(Button("Quit", (MainApp.WIDTH//2, 9*MainApp.HEIGHT//10), self.quit, size = 30))
 
@@ -66,11 +66,10 @@ class MainApp:
             button.checkHover(pygame.mouse.get_pos())
             button.draw(self.WIN)
 
-    def setApp(self, appName: str) -> None:
+    def setApp(self, cls) -> None:
         '''Sets the app for visualization'''
         self.clearScreen(update=True)
-        print(f"Loading {appName}")
-        exec(f"from {appName} import App\nself.app: App = App(self.WIN)")
+        self.app = cls(self.WIN)
     
     def quitApp(self) -> None:
         self.app.quit()
@@ -102,6 +101,9 @@ class MainApp:
         
         pygame.quit()
 
-if __name__ == "__main__":
+def main() -> None:
     mainApp: MainApp = MainApp()
     mainApp.mainloop()
+
+if __name__ == "__main__":
+    main()
