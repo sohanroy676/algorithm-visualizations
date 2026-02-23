@@ -1,7 +1,7 @@
-# from .astar import Astar
-from .hilbert_curve import HilbertCurveApp
 from .visualizer import Visualizer
+from .hilbert_curve import HilbertCurveApp
+from .sudoku import SudokuApp
 
-_ALL = [HilbertCurveApp]
+__ALL = [HilbertCurveApp, SudokuApp]
 
-APPS = {app.NAME: app for app in _ALL}
+APPS = {app.NAME: app for app in __ALL}
