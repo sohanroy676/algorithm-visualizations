@@ -106,7 +106,7 @@ class HilbertCurveApp(Visualizer):
             if not self.hilber_curve.done:
                 self.next_line()
             
-            self.update_window()
+            self.update_screen()
 
 if __name__ == "__main__":
     window: pygame.Surface = pygame.display.set_mode((HilbertCurveApp.SURFDIM, HilbertCurveApp.SURFDIM))
