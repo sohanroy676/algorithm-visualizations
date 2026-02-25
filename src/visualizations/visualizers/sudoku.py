@@ -1,3 +1,6 @@
+'''
+Sudoku + Solver with backtracking algorithm
+'''
 import pygame
 from .visualizer import Visualizer
 
@@ -16,9 +19,11 @@ class Sudoku:
         self.solving_history: list[tuple[int, int, int]] = []
     
     def get_valid_nums(self) -> list[int]:
+        # Gets all the valid numbers for a cell
         return [i for i in range(self.solving_num, 10) if self.is_valid(i, self.solving_row, self.solving_col)]
 
     def next_pos(self) -> None:
+        # Go to the next cell position
         self.solving_col += 1
         if self.solving_col >= 9:
             self.solving_row += 1
@@ -29,18 +34,21 @@ class Sudoku:
             self.reset_solve()
             return True
         
+        # Skipping the cells which already have some value
         if self.board[self.solving_row][self.solving_col]:
             self.next_pos()
             return False
         
         valid_nums: list[int] = self.get_valid_nums()
         if valid_nums:
+            # Place the smalles valid number and go to the next cell
             num = valid_nums[0]
             self.board[self.solving_row][self.solving_col] = num
             self.solving_history.append((self.solving_row, self.solving_col, num))
             self.solving_num = 1
             self.next_pos()
         else:
+            # If a cell has no possible numbers, backtrack
             self.solving_row, self.solving_col, self.solving_num = self.solving_history.pop()
             self.board[self.solving_row][self.solving_col] = 0
             self.solving_num += 1
@@ -48,6 +56,7 @@ class Sudoku:
         return False
     
     def is_valid(self, num: int, row: int, col: int) -> bool:
+        # Checks the row, col and the 3x3 grid
         start_row: int = (row//3)*3
         start_col: int = (col//3)*3
         for i in range(9):
@@ -73,8 +82,9 @@ class SudokuApp(Visualizer):
     def __init__(self, screen: pygame.Surface) -> None:
         super().__init__(screen)
 
+        # Initializing the font and text Surfaces
         self.font: pygame.Font = pygame.font.Font(SudokuApp.TYPEFACE, SudokuApp.CELL_SIZE)
-        self.texts: dict[str] = {i: self.font.render(f'{i}', True, self.COLORS["fg"]) for i in range(10)}
+        self.texts: dict[str, pygame.Surface] = {i: self.font.render(f'{i}', True, self.COLORS["fg"]) for i in range(10)}
         self.texts["speed"] = self.font.render("Speed", True, self.COLORS["fg"])
 
         self.sudoku: Sudoku = Sudoku()
@@ -83,14 +93,14 @@ class SudokuApp(Visualizer):
         self.selected_num: int = 1
         self.solving_speed_index: int = 0
         self.solving_speeds: dict[int: int] = [30, 60, 0]
-        SudokuApp._print_instructions()
+        SudokuApp.__print_instructions()
     
     def reset(self) -> None:
         self.solving: bool = False
         self.sudoku.reset()
     
     @staticmethod
-    def _print_instructions():
+    def __print_instructions():
         print("Starting Sudoku")
         print("ESC to quit")
         print("ENTER to start|pause solving")
@@ -126,19 +136,23 @@ class SudokuApp(Visualizer):
                             case pygame.BUTTON_WHEELDOWN:
                                 self.selected_num = (self.selected_num + 1)%10
                             case pygame.BUTTON_LEFT:
-                                mouse_pos: tuple[int, int] = pygame.mouse.get_pos()
-                                row: int = (mouse_pos[1] - self.blit_pos.y)//self.CELL_SIZE
-                                col: int = (mouse_pos[0] - self.blit_pos.x)//self.CELL_SIZE
-                                if 0 <= row < 9 and 0 <= col < 9 and (self.selected_num == 0 or self.sudoku.board[row][col] == 0):
-                                    self.sudoku.place(self.selected_num, row, col)
-                                elif row == 9 and 3 <= col < 3 + len(self.solving_speeds):
-                                    self.solving_speed_index = col - 3
+                                self.on_click()
+
             if self.solving:
                 self.solving = not self.sudoku.step_next()
                 
             self.draw()
+    
+    def on_click(self) -> None:
+        mouse_pos: tuple[int, int] = pygame.mouse.get_pos()
+        row: int = (mouse_pos[1] - self.blit_pos.y)//self.CELL_SIZE
+        col: int = (mouse_pos[0] - self.blit_pos.x)//self.CELL_SIZE
+        if 0 <= row < 9 and 0 <= col < 9 and (self.selected_num == 0 or self.sudoku.board[row][col] == 0):
+            self.sudoku.place(self.selected_num, row, col)
+        elif row == 9 and 3 <= col < 3 + len(self.solving_speeds):
+            self.solving_speed_index = col - 3
 
-    def draw_grid(self):
+    def draw_grid(self) -> None:
         for i in range(10):
             thickness = 3 if i % 3 == 0 else 1
             pygame.draw.line(self.surface, self.COLORS["fg"], (i*self.CELL_SIZE, 0), (i*self.CELL_SIZE, self.HEIGHT - self.CELL_SIZE), thickness)
@@ -149,6 +163,7 @@ class SudokuApp(Visualizer):
 
     def draw_board(self) -> None:
         if self.solving:
+            # Background for the cells which are placed by the backtracking algorithm
             for row, col, _ in self.sudoku.solving_history:
                 pygame.draw.rect(self.surface, self.COLORS["history"], (col*self.CELL_SIZE, row*self.CELL_SIZE, self.CELL_SIZE, self.CELL_SIZE))
         
@@ -159,20 +174,26 @@ class SudokuApp(Visualizer):
 
     def draw(self) -> None:
         self.surface.fill(self.COLORS["bg"])
+        
+        # Background for the selected number on the right numbers panel
         pygame.draw.rect(self.surface, self.COLORS["selected"], (self.CELL_SIZE*9, self.CELL_SIZE*self.selected_num, self.CELL_SIZE, self.CELL_SIZE))
         
+        # Numbers for the right numbers panel
         for i in range(10):
             self.blit_num(i, i, 9)
+        
         self.draw_grid()
         self.draw_board()
         self.surface.blit(self.texts["speed"], (0, self.CELL_SIZE*9))
         
+        # Background for the selected speed
         pygame.draw.rect(self.surface, self.COLORS["selected"], ((3 + self.solving_speed_index)*self.CELL_SIZE, 9*self.CELL_SIZE, self.CELL_SIZE, self.CELL_SIZE))
         
+        # Speed options
         for i in range(len(self.solving_speeds)):
             self.blit_num(i, 9, 3 + i)
         
-        self.update_window()
+        self.update_screen()
 
 if __name__ == "__main__":
     pygame.init()
