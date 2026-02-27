@@ -1,16 +1,16 @@
 from .visualizer import Visualizer
 
 from .pathfinder import PathfinderApp
+from .sorting import SortingApp
 from .hilbert_curve import HilbertCurveApp
 # from .life import LifeApp             # Shader
 # from .marchsq import MarchSqApp       # Shader
 from .nqueens import NQueensApp
 # from .sand import SandApp             # Shader
-from .sorting import SortingApp
 from .sudoku import SudokuApp
-# from .wavefunc import WaveFuncApp     # Shader
-# from .wolframca import WolframcaApp   # Shader
+# from .wavefunc import WaveFuncApp
+from .wolfram_automata import WolframAutomataApp
 
-__ALL = [PathfinderApp, HilbertCurveApp, NQueensApp, SortingApp, SudokuApp]
+_ALL = [PathfinderApp, SortingApp, HilbertCurveApp, NQueensApp, SudokuApp, WolframAutomataApp]
 
-APPS = {app.NAME: app for app in __ALL}
+APPS = {app.NAME: app for app in _ALL}
