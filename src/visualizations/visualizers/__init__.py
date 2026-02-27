@@ -1,6 +1,6 @@
 from .visualizer import Visualizer
 
-# from .astar import AstarApp
+from .astar import AstarApp
 from .hilbert_curve import HilbertCurveApp
 # from .life import LifeApp             # Shader
 # from .marchsq import MarchSqApp       # Shader
@@ -11,6 +11,6 @@ from .sudoku import SudokuApp
 # from .wavefunc import WaveFuncApp     # Shader
 # from .wolframca import WolframcaApp   # Shader
 
-__ALL = [HilbertCurveApp, NQueensApp, SortingApp, SudokuApp]
+__ALL = [AstarApp, HilbertCurveApp, NQueensApp, SortingApp, SudokuApp]
 
 APPS = {app.NAME: app for app in __ALL}

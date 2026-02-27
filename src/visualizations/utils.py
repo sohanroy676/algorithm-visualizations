@@ -1,10 +1,10 @@
 import pygame
 
-def drawGridLines(surf: pygame.Surface, ROWS: int, COLS: int, SIDE: int, COLOR: tuple[int], update=False) -> None:
-    for i in range(ROWS+1):
-        pygame.draw.line(surf, COLOR, (0, i*SIDE), (COLS*SIDE, i*SIDE))
-    for i in range(COLS+1):
-        pygame.draw.line(surf, COLOR, (i*SIDE, 0), (i*SIDE, ROWS*SIDE))
+def draw_grid_lines(surf: pygame.Surface, rows: int, cols: int, side_length: int, color: tuple[int], update=False) -> None:
+    for i in range(rows + 1):
+        pygame.draw.line(surf, color, (0, i*side_length), (cols*side_length, i*side_length))
+    for i in range(cols + 1):
+        pygame.draw.line(surf, color, (i*side_length, 0), (i*side_length, rows*side_length))
     if update: pygame.display.update()
 
 def HSV_to_RGB(h: float, s: float, v: float) -> tuple[int | float]:
