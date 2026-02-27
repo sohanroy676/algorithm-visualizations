@@ -1,24 +1,81 @@
-# Visualizations
-<h3>This project contains the following visualisations in python using pygame module</h3>
-<table>
-<li><b>Pathfinder</b>: An interactive implementation of the A-Star Pathfinding Algorithm</li>
+# Algorithm Visualization Lab
 
-<li><b>Hilbert Curve</b>: Displaying an N-order Space Filling Hilbert Curve</li>
+A modular Python-based visualization framework for exploring classical algorithms, cellular automata, fractals, and procedural generation systems.
 
-<li><b>Conway's Game of Life</b>: Simulates the 2D Cellular Automata</li>
+This project focuses on clarity, correctness, and architectural separation between algorithm logic and rendering.
 
-<li><b>Marching Squares</b>: Visualisating the Marching Squares algorithm</li>
+## Overview
 
-<li><b>N-Queens Problem</b>: Solved using Backtracking algorithm (normal and with bitmanipulation - for learning)</li>
+Algorithm Visualization Lab provides interactive visual demonstrations of:
 
-<li><b>Sand Simulation</b>: Simulating sand as a Cellular Automata</li>
+- Graph traversal and shortest path algorithms
+- Comparison-based sorting algorithms
+- Backtracking and constraint-solving systems
+- Fractal geometry
+- Cellular automata
+- Procedural pattern generation
+- Grid-based simulations
 
-<li><b>Sudoku</b>: Solves the given Sudoku using Backtracking algorithm</li>
+The goal is to improve conceptual understanding through deterministic and step-wise visual execution.
 
-<li><b>Sorting Algorithms</b>: Visualisating BubbleSort and SelectionSort</li>
+## Implemented Systems
 
-<li><b>Wolfram CA</b>: Visualising the 256 rules of the 1D Wolfram Cellular Automata</li>
-</table>
+### Graph & Pathfinding
 
-These can be run individually or through main.py
-Modules required: pygame, opensimplex
+- A\* Search
+- Dijkstra’s Algorithm
+- Breadth-First Search (BFS)
+- Depth-First Search (DFS)
+
+### Sorting
+
+- Bubble Sort
+- Selection Sort
+- Insertion Sort
+
+### Constraint Solvers
+
+- N-Queens
+- Sudoku Solver
+
+### Fractals
+
+- Hilbert Curve
+
+### Cellular Automata
+
+- Conway’s Game of Life
+- Wolfram Elementary Automata
+
+### Procedural Generation
+
+- Wave Function Collapse
+
+### Computational Geometry
+
+- Marching Squares
+
+### Simulation
+
+- Sand Particle Simulation
+
+## Architecture
+
+- Separation of algorithm logic from rendering layer
+- Modular directory structure
+- Reusable grid and animation framework
+- Deterministic simulation stepping
+- Object-oriented design
+
+## Tech Stack
+
+- **Python** – Core algorithm implementations
+- **Pygame** – Real-time rendering and interaction
+- **UV** – Dependency and environment management
+
+## Goals
+
+- Strengthen intuition for classical algorithms
+- Visualize algorithmic state transitions
+- Explore emergent behavior systems
+- Build a reusable visualization framework
