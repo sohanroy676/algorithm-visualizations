@@ -8,9 +8,9 @@ from .hilbert_curve import HilbertCurveApp
 from .nqueens import NQueensApp
 # from .sand import SandApp             # Shader
 from .sudoku import SudokuApp
-# from .wavefunc import WaveFuncApp
+from .wave_function_collapse import WaveFuncApp
 from .wolfram_automata import WolframAutomataApp
 
-_ALL = [PathfinderApp, SortingApp, HilbertCurveApp, NQueensApp, SudokuApp, WolframAutomataApp]
+_ALL = [PathfinderApp, SortingApp, HilbertCurveApp, NQueensApp, SudokuApp, WaveFuncApp, WolframAutomataApp]
 
 APPS = {app.NAME: app for app in _ALL}

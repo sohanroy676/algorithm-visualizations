@@ -18,6 +18,20 @@ Algorithm Visualization Lab provides interactive visual demonstrations of:
 
 The goal is to improve conceptual understanding through deterministic and step-wise visual execution.
 
+## Steps to run
+
+1. Install the dependencies
+
+```bash
+uv sync
+```
+
+2. Run the app
+
+```bash
+uv run visualizations
+```
+
 ## Implemented Systems
 
 ### Graph & Pathfinding
