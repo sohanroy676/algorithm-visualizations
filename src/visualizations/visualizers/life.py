@@ -1,48 +1,76 @@
 '''
 Cellular Automata (2D) : Conway's Game of Life
 '''
-import pygame, random
-from utils import drawGridLines
+import pygame
+from numpy import ndarray, array
+from random import choices
+from enum import IntEnum
+from visualizations.utils import draw_grid_lines
+from visualizations.visualizers.visualizer import Visualizer
+
+class CellState(IntEnum):
+    DEAD = 0
+    ALIVE = 1
 
 class Life:
-    def __init__(self) -> None:
+    def __init__(self, rows: int, cols: int) -> None:
+        self.rows: int = rows
+        self.cols: int = cols
+        self._random_choice_weights: tuple[float, float] = (0.8, 0.2)
+
+        self.reset()
+
+        self._next_grid: list[list[CellState]] = [[0 for _ in range(cols)] for _ in range(rows)]
+    
+    def reset(self) -> None:
         self.running: bool = False
-        self.resetGrid()
+        self.reset_grid()
         self.saved: list[list[int]] = []
 
-    def resetGrid(self, rand: bool = False) -> None:
-        self.grid: list[list[int]] = [[0 if not rand else random.choice([0, 1, 0, 0, 0]) for i in range(App.COLS)] for j in range(App.ROWS)]
+    def reset_grid(self, is_random: bool = False) -> None:
+        self.current_grid: list[list[CellState]] = [
+            [CellState.DEAD if not is_random else self._get_random_value() for _ in range(self.cols)]
+            for _ in range(self.rows)]
     
-    def place(self, pos: list[int], s: int) -> None:
-        if 0 <= pos[0] < App.WIDTH and 0 <= pos[1] < App.HEIGHT:
-            r, c = pos[1]//App.SIDE, pos[0]//App.SIDE
-            self.grid[r][c] = s
+    def _get_random_value(self) -> CellState:
+        return choices((CellState.DEAD, CellState.ALIVE), weights = self._random_choice_weights, k = 1)[0]
     
-    def numAlive(self, r: int, c: int) -> int:
-        n: int = 0
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                if not i and not j: continue
-                newR: int = r+i
-                newC: int = c+j
-                if newR >= App.ROWS: newR %= App.ROWS
-                if newC >= App.COLS: newC %= App.COLS
-                if (self.grid[newR][newC]):
-                    n += 1
-        return n
+    def place(self, row: int, col: int, value: CellState) -> None:
+        self.current_grid[row][col] = value
+    
+    def _alive_neighbors_count(self, row: int, col: int) -> int:
+        neighbors_alive: int = 0
 
-    def next(self) -> None:
-        nextGrid: list[list[int]] = [[0 for j in i] for i in self.grid]
-        for i, row in enumerate(self.grid):
-            for j, val in enumerate(row):
-                n = self.numAlive(i, j)
-                if  n == 3: 
-                    nextGrid[i][j] = 1
-                elif n == 2:
-                    nextGrid[i][j] = val            
-        for i, row in enumerate(nextGrid):
-            for j, val in enumerate(row):
-                self.grid[i][j] = val
+        for dr in (-1, 0, 1):
+            for dc in (-1, 0, 1):
+                if dr == dc == 0:
+                    continue
+
+                new_row: int = row + dr
+                new_col: int = col + dc
+                if new_row >= self.rows:
+                    new_row %= self.rows
+                if new_col >= self.cols:
+                    new_col %= self.cols
+
+                if self.current_grid[new_row][new_col] == CellState.ALIVE:
+                    neighbors_alive += 1
+        
+        return neighbors_alive
+
+    def step_next(self) -> None:
+        for row_index, row in enumerate(self.current_grid):
+            for col_index, val in enumerate(row):
+                neighbors_alive: int = self._alive_neighbors_count(row_index, col_index)
+                match neighbors_alive:
+                    case 2:
+                        self._next_grid[row_index][col_index] = val
+                    case 3:
+                        self._next_grid[row_index][col_index] = 1
+                    case _:
+                        self._next_grid[row_index][col_index] = 0
+
+        self.current_grid, self._next_grid = self._next_grid, self.current_grid
     
     def save(self) -> None:
         self.saved: list[list[int]] = []
@@ -57,15 +85,30 @@ class Life:
             for j, val in enumerate(row):
                 self.grid[i][j] = val
 
-class App:
+class LifeApp(Visualizer):
+    NAME: str = "Life"
     ROWS: int = 140
     COLS: int = 200
     SIDE: int = 5
     WIDTH: int = COLS * SIDE
     HEIGHT: int = ROWS * SIDE
 
-    COLORS: list[tuple[int]] = [(100, 100, 100), (255, 255, 0), (150, 150, 150)]
-    def __init__(self, WIN: pygame.Surface) -> None:
+    COLORS: tuple[tuple[int, int, int], ...] = ((100, 100, 100), (255, 255, 0), (150, 150, 150))
+    COLORS_ARRAY: ndarray = array(((100, 100, 100), (255, 255, 0), (150, 150, 150)))
+    def __init__(self, screen: pygame.Surface) -> None:
+        super().__init__(screen)
+
+        self.life: Life = Life(self.ROWS, self.COLS)
+        self.fps: int = 0
+        self.mouse_state: int = -1
+
+        self.life_surface: pygame.Surface = pygame.Surface((self.COLS, self.ROWS)).convert()
+
+        LifeApp.print_instructions()
+
+    
+    @staticmethod
+    def print_instructions() -> None:
         print("Starting Cellular Automata (2D) : Conway's Game of Life")
         print("ESC to Quit")
         print("ENTER to continue/pause the simulation")
@@ -76,39 +119,33 @@ class App:
         print("RIGHT_CLICK to clear the cell")
         print("SCROLL_WHEEL_UP to increase the simulation speed")
         print("SCROLL_WHEEL_DOWN to decrease the simulation speed")
-        self.WIN: pygame.Surface = WIN
-        WINRect: pygame.Rect = self.WIN.get_rect()
-        self.SURF: pygame.Surface = pygame.Surface((App.WIDTH, App.HEIGHT))
-        pygame.display.set_caption("Conway's Game of Life")
-
-        self.blitPos: tuple[int] = ((WINRect.width - App.WIDTH)//2, (WINRect.height - App.HEIGHT)//2)
-
-        self.fps: int = 60
-        self.mouseState: int = 0
-        self.life: Life = Life()
-        self.clock = pygame.time.Clock()
-
-    def drawGrid(self) -> None:
-        for i, row in enumerate(self.life.grid):
-            for j, col in enumerate(row):
-                if col:
-                    pygame.draw.rect(self.SURF, App.COLORS[1], (j*App.SIDE, i*App.SIDE, App.SIDE, App.SIDE))
+    
+    def draw_grid(self) -> None:
+        for i, row in enumerate(self.life.current_grid):
+            for j, val in enumerate(row):
+                if val == 0:
+                    continue
+                pygame.draw.rect(self.surface, self.COLORS[CellState.ALIVE], (j*self.SIDE, i*self.SIDE, self.SIDE, self.SIDE))
+    
+    def draw_grid_1(self) -> None:
+        surface_array: ndarray = pygame.surfarray.pixels3d(self.life_surface)
+        surface_array[:] = self.COLORS_ARRAY[self.life.current_grid].swapaxes(0, 1)
+        del surface_array
+        pygame.transform.scale_by(self.life_surface, self.SIDE, self.surface)
 
     def draw(self) -> None:
-        self.SURF.fill(App.COLORS[0])
-        self.drawGrid()
-        drawGridLines(self.SURF, App.ROWS, App.COLS, App.SIDE, App.COLORS[2])
-        self.update()
+        self.surface.fill(self.COLORS[CellState.DEAD])
+        self.draw_grid_1()
+        draw_grid_lines(self.surface, self.ROWS, self.COLS, self.SIDE, self.COLORS[2])
+        self.update_screen()
     
-    def update(self) -> None:
-        pygame.display.update(self.WIN.blit(self.SURF, self.blitPos))
-    
-    def quit(self) -> None:
-        pygame.display.set_caption("Visualizations")
-    
-    def getMousePos(self) -> tuple[int]:
-        pos: tuple[int] = pygame.mouse.get_pos()
-        return [pos[0]-self.blitPos[0], pos[1]-self.blitPos[1]]
+    def get_mouse_pos(self) -> tuple[int, int] | None:
+        x, y = pygame.mouse.get_pos() 
+        col: int = (x - self.blit_pos.x)//self.SIDE
+        row: int = (y - self.blit_pos.y)//self.SIDE
+        if row < 0 or row >= self.ROWS or col < 0 or col >= self.COLS:
+            return None
+        return (row, col)
 
     def mainloop(self) -> bool:
         while True:
@@ -124,9 +161,12 @@ class App:
                                 return True
                             case pygame.K_RETURN:
                                 self.life.running = not self.life.running
-                                self.fps = 10 if self.life.running else 30
+                            case pygame.K_SPACE:
+                                self.life.step_next()
                             case pygame.K_r:
-                                self.life.resetGrid()
+                                self.life.reset_grid()
+                            case pygame.K_TAB:
+                                self.life.reset_grid(True)
                             case pygame.K_s:
                                 self.life.save()
                             case pygame.K_l:
@@ -135,26 +175,32 @@ class App:
                     case pygame.MOUSEBUTTONDOWN:
                         match event.button:
                             case pygame.BUTTON_LEFT:
-                                self.mouseState = 2
+                                self.mouse_state = CellState.ALIVE
                             case pygame.BUTTON_RIGHT:
-                                self.mouseState = 1
+                                self.mouse_state = CellState.DEAD
                             case pygame.BUTTON_WHEELUP:
                                 self.fps += 10
                             case pygame.BUTTON_WHEELDOWN:
                                 self.fps = max(self.fps - 10, 0)
                     
                     case pygame.MOUSEBUTTONUP:
-                        self.mouseState = 0
+                        self.mouse_state = -1
             
             if self.life.running:
-                self.life.next()
-            if self.mouseState:
-                self.life.place(self.getMousePos(), self.mouseState - 1)
+                self.life.step_next()
+
+            if self.mouse_state != -1:
+                mouse_pos: tuple[int, int] | None = self.get_mouse_pos()
+                if mouse_pos is not None:
+                    self.life.place(*mouse_pos, CellState(self.mouse_state))
 
             self.draw()
 
-if __name__ == "__main__":
-    WIN: pygame.Surface = pygame.display.set_mode((App.WIDTH, App.HEIGHT))
-    app: App = App(WIN)
+def main() -> None:
+    screen: pygame.Surface = pygame.display.set_mode((LifeApp.WIDTH, LifeApp.HEIGHT))
+    app: Visualizer = LifeApp(screen)
     app.mainloop()
-    pygame.quit()
+    pygame.quit() 
+
+if __name__ == "__main__":
+    main()

@@ -53,7 +53,7 @@ class NQueens:
 
 class NQueensApp(Visualizer):
     NAME: str = "NQueens"
-    queens_count: int = 16
+    queens_count: int = 8
     CELL_SIZE: int = 50
     SURFACE_SIZE: int = queens_count*CELL_SIZE
     WIDTH: int = SURFACE_SIZE

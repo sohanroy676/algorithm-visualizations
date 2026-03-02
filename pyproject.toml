@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "numpy>=2.4.2",
+    "opensimplex>=0.4.5.1",
     "pygame-ce>=2.5.6",
 ]
 
