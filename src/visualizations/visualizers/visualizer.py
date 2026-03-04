@@ -10,7 +10,7 @@ class Visualizer(ABC):
         self.blit_pos.size = (self.WIDTH, self.HEIGHT)
         self.blit_pos.center = (self.screen_rect.width//2, self.screen_rect.height//2)
 
-        self.surface: pygame.Surface = pygame.Surface((self.WIDTH, self.HEIGHT))
+        self.surface: pygame.Surface = pygame.Surface((self.WIDTH, self.HEIGHT)).convert()
         self.surface_rect: pygame.Rect = self.surface.get_rect()
         pygame.display.set_caption(self.NAME)
 
