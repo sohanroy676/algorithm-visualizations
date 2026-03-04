@@ -1,4 +1,5 @@
 import pygame
+from typing import Any, Generator
 
 def draw_grid_lines(surf: pygame.Surface, rows: int, cols: int, side_length: int, color: tuple[int], update=False) -> None:
     for i in range(rows + 1):
@@ -46,22 +47,22 @@ class Vector2:
         self.x: int | float = x
         self.y: int | float = y
     
-    def getPos(self) -> list[int]:
+    def get_pos(self) -> list[int]:
         return [self.x, self.y]
     
-    def __add__(self, other):
+    def __add__(self, other: Vector2):
         if isinstance(other, Vector2):
             return Vector2(self.x + other.x, self.y + other.y)
         else:
             return NotImplemented
     
-    def __mul__(self, other):
+    def __mul__(self, other: int | float):
         if isinstance(other, int | float):
             return Vector2(self.x * other, self.y * other)
         else:
             return NotImplemented
     
-    def __iter__(self):
+    def __iter__(self) -> Generator[int | float, Any, None]:
         yield self.x
         yield self.y
     
