@@ -2,6 +2,9 @@ import pygame
 from abc import ABC, abstractmethod
 
 class Visualizer(ABC):
+    WIDTH: int
+    HEIGHT: int
+    NAME: str
     def __init__(self, screen: pygame.Surface) -> None:
         self.screen: pygame.Surface = screen
         self.screen_rect: pygame.Rect = screen.get_rect()
@@ -17,7 +20,7 @@ class Visualizer(ABC):
         self.clock = pygame.time.Clock()
     
     @abstractmethod
-    def mainloop(self) -> None:
+    def mainloop(self) -> bool:
         pass
     
     def update_screen(self) -> None:

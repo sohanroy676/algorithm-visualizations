@@ -4,12 +4,16 @@ The main menu to select the visualisation
 import pygame
 from .utils import Label, Button
 from .visualizers import APPS, Visualizer
+from typing import Any
 pygame.init()
 
 class MainApp:
     WIDTH: int = 1280
     HEIGHT: int = 720
     COLORS: dict = {"bg": pygame.Color("purple")}
+
+    theme: dict[str, Any] = {"primary": (37, 123, 244), "background-light": (245, 247, 248), "background-dark": "#101722",
+                             "font-family": "Space Grotesk", "text-color": "#f1f5f9"}
 
     def __init__(self, fullscreen: bool = False) -> None:
         '''Initializing the main app'''

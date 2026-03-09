@@ -36,7 +36,7 @@ class HilbertCurve:
                 point.x += length
         return point
 
-    def get_next_point(self) -> Vector2 | None:
+    def get_next_point(self) -> Vector2:
         point: Vector2 = self.get_point(self.index)
         self.index += 1
         if self.index >= self.points:
@@ -56,7 +56,7 @@ class HilbertCurveApp(Visualizer):
         self.surface.fill((0, 0, 0))
         self.fps: int = 60
 
-        self.hilber_curve: HilbertCurve = HilbertCurve(self.ORDER)
+        self.hilbert_curve: HilbertCurve = HilbertCurve(self.ORDER)
         self.line_length: int = 2
         self.prev_point: Vector2 = self.get_point()
 
@@ -68,7 +68,7 @@ class HilbertCurveApp(Visualizer):
         print("S to save the image of the generated curve into 'assets' folder")
 
     def get_point(self) -> Vector2:
-        point: Vector2 = self.hilber_curve.get_next_point()
+        point: Vector2 = self.hilbert_curve.get_next_point()
         point *= self.line_length
         point += Vector2(self.line_length/2, self.line_length/2)
         return point
@@ -78,8 +78,8 @@ class HilbertCurveApp(Visualizer):
         pygame.draw.line(self.surface, self.get_color(), tuple(self.prev_point), tuple(next_point))
         self.prev_point = next_point
 
-    def get_color(self) -> tuple[int]:
-        return HSV_to_RGB(remap(0, self.hilber_curve.points, 0, 360, self.hilber_curve.index), 1, 1)
+    def get_color(self) -> tuple[int, ...]:
+        return tuple(map(int, HSV_to_RGB(remap(0, self.hilbert_curve.points, 0, 360, self.hilbert_curve.index), 1, 1)))
 
     def mainloop(self) -> bool:
         while True:
@@ -96,14 +96,14 @@ class HilbertCurveApp(Visualizer):
                                 self.quit()
                                 return True
                             case pygame.K_s:
-                                pygame.image.save(self.SURF, f".\\assets\\hilbert_curve_{self.ORDER}.png")
+                                pygame.image.save(self.surface, f".\\assets\\hilbert_curve_{self.ORDER}.png")
                     
                     case pygame.MOUSEBUTTONDOWN:
                         match event.button:
                             case pygame.BUTTON_WHEELUP: self.fps += 10
                             case pygame.BUTTON_WHEELDOWN: self.fps = max(self.fps-10, 0)
 
-            if not self.hilber_curve.done:
+            if not self.hilbert_curve.done:
                 self.next_line()
             
             self.update_screen()

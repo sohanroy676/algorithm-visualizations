@@ -1,5 +1,6 @@
 import pygame
 from typing import Any, Generator
+from visualizations.type import Color
 
 def draw_grid_lines(surf: pygame.Surface, rows: int, cols: int, side_length: int, color: tuple[int], update=False) -> None:
     for i in range(rows + 1):
@@ -8,7 +9,7 @@ def draw_grid_lines(surf: pygame.Surface, rows: int, cols: int, side_length: int
         pygame.draw.line(surf, color, (i*side_length, 0), (i*side_length, rows*side_length))
     if update: pygame.display.update()
 
-def HSV_to_RGB(h: float, s: float, v: float) -> tuple[int | float]:
+def HSV_to_RGB(h: float, s: float, v: float) -> tuple[int | float, int | float, int | float]:
     c = v*s
     x = c * (1 - abs((h/60) % 2 - 1))
     m = abs(v - c)
@@ -47,7 +48,7 @@ class Vector2:
         self.x: int | float = x
         self.y: int | float = y
     
-    def get_pos(self) -> list[int]:
+    def get_pos(self) -> list[int | float]:
         return [self.x, self.y]
     
     def __add__(self, other: Vector2):
@@ -90,7 +91,7 @@ class Label:
         pygame.draw.rect(surf, self.settings["background"], self.rect, self.settings["width"], self.settings["borderRadius"])
         surf.blit(self.renderedText, self.rect)
 
-    def changeText(self, text):
+    def change_text(self, text):
         self.__init__(text, eval(f"self.rect.{self.settings['anchor']}"), **self.settings)
     
     def setDefault(**kwargs):
